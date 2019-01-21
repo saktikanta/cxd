@@ -1,35 +1,36 @@
 import time
 from django.views.generic import CreateView, ListView, UpdateView
-from ..models import ClientUser, User, CapabilityArea
-from ..forms import ClientUserSignUpForm
+from ..models import CxSuperUser, User, CapabilityArea
+from ..forms import CxSuperUserSignUpForm
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from ..decorators import clientuser_required
+from ..decorators import clientuser_required, cxsuperuser_required
 from django.contrib.auth import login
 from django.shortcuts import redirect, render
 from django.db.models import Count
 
-class ClientUserSignUpView(CreateView):
+@method_decorator([login_required, cxsuperuser_required], name='dispatch')
+class CxSuperUserSignUpView(CreateView):
     model = User
-    form_class = ClientUserSignUpForm
+    form_class = CxSuperUserSignUpForm
     template_name = 'registration/signup_form.html'
 
     def get_context_data(self, **kwargs):
-        kwargs['user_type'] = 'clientuser'
+        kwargs['user_type'] = 'cxsuperuser'
         return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
         user = form.save()
         login(self.request, user)
         # return redirect('home')
-        return redirect('clientuser:capability_area_list')
+        return redirect('cxsuperuser:cx_su_capability_area_list')
 
-@method_decorator([login_required, clientuser_required], name='dispatch')
-class CapabilityAreaList(ListView):
+@method_decorator([login_required, cxsuperuser_required], name='dispatch')
+class CxSuCapabilityAreaList(ListView):
     model = CapabilityArea
     ordering = ('name', )
     context_object_name = 'capabilityareas'
-    template_name = 'clientuser/capability_area_list.html'
+    template_name = 'cxsuperuser/cx_su_capability_area_list.html'
     # template_name = 'home.html'
 
     # def get_queryset(self):
